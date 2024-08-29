@@ -16,8 +16,7 @@ open NNReal
 variable {α : Type u} [Fintype α]
 
 /-- The one-event entropy function, H₁(p) = -p*ln(p). Uses nits. -/
-def H₁ : Prob → ℝ :=
-  fun x ↦ -x * Real.log x
+abbrev H₁ : Prob → ℝ := fun x ↦ Real.negMulLog x
 
 /-- H₁ of 0 is zero.-/
 @[simp]
@@ -30,9 +29,7 @@ def H₁_one_eq_zero : H₁ 1 = 0 := by
   norm_num [H₁]
 
 /-- Entropy is nonnegative. -/
-theorem H₁_nonneg (p : Prob) : 0 ≤ H₁ p := by
-  rw [H₁, neg_mul, Left.nonneg_neg_iff]
-  exact Real.mul_log_nonpos p.zero_le_coe p.coe_le_one
+theorem H₁_nonneg (p : Prob) : 0 ≤ H₁ p := Real.negMulLog_nonneg p.property.1 p.property.2
 
 /-- Entropy is less than 1. -/
 theorem H₁_le_1 (p : Prob) : H₁ p < 1 := by
@@ -50,8 +47,7 @@ theorem H₁_le_1 (p : Prob) : H₁ p < 1 := by
 theorem H₁_le_exp_m1 (p : Prob) : H₁ p ≤ Real.exp (-1) := by
   rw [H₁]
   by_cases h : p = 0
-  · subst h
-    norm_num
+  · norm_num [h]
     exact Real.exp_nonneg (-1)
   · sorry
 
@@ -72,7 +68,7 @@ theorem H₁_concave : ∀ (x y : Prob), ∀ (p : Prob), p.mix (H₁ x) (H₁ y)
   rw [← ne_eq] at hxy hp hp₁
   have := Real.strictConcaveOn_negMulLog.2
   replace := @this x ?_ y ?_ ?_ p (1-p) ?_ ?_ (by linarith)
-  · simp only [smul_eq_mul, Real.negMulLog] at this
+  · simp_all only [smul_eq_mul, Real.negMulLog]
     apply le_of_lt
     convert this
   · simp only [Set.mem_Ici, Prob.zero_le_coe]
